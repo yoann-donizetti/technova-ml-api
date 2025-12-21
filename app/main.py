@@ -39,3 +39,9 @@ def predict(payload: PredictionRequest):
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+from fastapi.responses import RedirectResponse
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
