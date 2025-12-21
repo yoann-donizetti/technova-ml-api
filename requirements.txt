@@ -4,3 +4,8 @@ pydantic
 pytest
 httpx
 pandas
+joblib
+numpy
+huggingface_hub
+scikit-learn==1.6.1
+xgboost==3.1.2
