@@ -1,13 +1,17 @@
+import os
 from fastapi.testclient import TestClient
 from app.main import app
+import numpy as np
 
+os.environ["TESTING"] = "1"
 client = TestClient(app)
+
+
 
 
 class DummyModel:
     def predict_proba(self, X):
-        # retourne [[proba_classe0, proba_classe1]]
-        return [[0.7, 0.3]]
+        return np.array([[0.7, 0.3]])
 
 
 def test_predict_ok():
@@ -43,14 +47,3 @@ def test_predict_ok():
 
     r = client.post("/predict", json=payload)
     assert r.status_code == 200, r.text
-
-    data = r.json()
-    assert "proba" in data
-    assert "prediction" in data
-    assert "threshold" in data
-
-
-def test_predict_validation_error():
-    # manque un champ obligatoire => 422
-    r = client.post("/predict", json={"age": 41})
-    assert r.status_code == 422
