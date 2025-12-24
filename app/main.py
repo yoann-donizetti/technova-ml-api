@@ -8,6 +8,8 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
+from huggingface_hub import hf_hub_download
+
 
 # --------------------------------------------------
 # CONFIG
@@ -15,14 +17,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")  # ex: postgresql+psycopg://user:pwd@host:5432/db
-MODEL_PATH = "models/model.joblib"
-THRESHOLD_PATH = "config/threshold.json"
+
+HF_MODEL_REPO = os.getenv("HF_MODEL_REPO")          # ex: donizetti-yoann/technova-ml-model
+HF_MODEL_FILENAME = os.getenv("HF_MODEL_FILENAME")  # ex: model.joblib
+
+THRESHOLD_PATH = os.getenv("THRESHOLD_PATH", "config/threshold.json")
 
 engine = None
 if DATABASE_URL:
     engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
-app = FastAPI(title="Technova ML API", version="0.2.2")
+app = FastAPI(title="Technova ML API", version="0.2.3")
+
 
 # --------------------------------------------------
 # SCHEMAS Pydantic
@@ -70,12 +76,24 @@ class PredictionResponse(BaseModel):
 # --------------------------------------------------
 @app.on_event("startup")
 def startup():
-    app.state.model = joblib.load(MODEL_PATH)
+    # --- modèle depuis Hugging Face Hub ---
+    if not HF_MODEL_REPO or not HF_MODEL_FILENAME:
+        raise RuntimeError("HF_MODEL_REPO and/or HF_MODEL_FILENAME not set")
+
+    model_path = hf_hub_download(
+        repo_id=HF_MODEL_REPO,
+        filename=HF_MODEL_FILENAME,
+    )
+    app.state.model = joblib.load(model_path)
+
+    # --- threshold ---
+    if not os.path.exists(THRESHOLD_PATH):
+        raise FileNotFoundError(f"Threshold file not found: {THRESHOLD_PATH}")
 
     with open(THRESHOLD_PATH, "r", encoding="utf-8") as f:
         app.state.threshold = float(json.load(f)["threshold"])
 
-    print("[startup] model + threshold loaded OK")
+    print("[startup] model loaded from HF + threshold loaded OK")
 
 
 # --------------------------------------------------
@@ -90,9 +108,11 @@ def root():
 def health():
     return {
         "status": "ok",
-        "model_loaded": app.state.model is not None,
-        "threshold": float(app.state.threshold),
+        "model_loaded": getattr(app.state, "model", None) is not None,
+        "threshold": float(getattr(app.state, "threshold", 0.0)),
         "db_configured": engine is not None,
+        "hf_model_repo": HF_MODEL_REPO,
+        "hf_model_filename": HF_MODEL_FILENAME,
     }
 
 
