@@ -1,18 +1,14 @@
-import os
+# tests/test_api.py
 from fastapi.testclient import TestClient
+
 from app.main import app
-import numpy as np
 
-os.environ["TESTING"] = "1"
 client = TestClient(app)
-
-
-
 
 class DummyModel:
     def predict_proba(self, X):
-        return np.array([[0.7, 0.3]])
-
+        # proba de classe 1 = 0.8
+        return [[0.2, 0.8]]
 
 def test_predict_ok():
     client.app.state.model = DummyModel()
@@ -20,30 +16,42 @@ def test_predict_ok():
 
     payload = {
         "age": 41,
-        "genre": "Homme",
+        "genre": "homme",
         "revenu_mensuel": 3000,
-        "statut_marital": "Célibataire",
-        "departement": "Sales",
-        "poste": "Sales Executive",
+        "statut_marital": "célibataire",
+        "departement": "sales",
+        "poste": "sales executive",
         "nombre_experiences_precedentes": 2,
         "annees_dans_l_entreprise": 5,
+
         "satisfaction_employee_environnement": 3,
         "satisfaction_employee_nature_travail": 3,
         "satisfaction_employee_equipe": 3,
         "satisfaction_employee_equilibre_pro_perso": 3,
+
         "heure_supplementaires": True,
         "augmentation_salaire_precedente": 12,
         "nombre_participation_pee": 2,
         "nb_formations_suivies": 1,
         "distance_domicile_travail": 10,
         "niveau_education": 3,
-        "domaine_etude": "Life Sciences",
-        "frequence_deplacement": "Travel_Rarely",
-        "ratio_manager_anciennete": 0.5,
-        "mobilite_relative": 0.2,
-        "evolution_performance": 3,
-        "pression_stagnation": 0.1
+        "domaine_etude": "life sciences",
+        "frequence_deplacement": "travel_rarely",
+
+        # champs BRUTS nécessaires au calcul des features
+        "annees_sous_responsable_actuel": 3,
+        "annees_dans_le_poste_actuel": 2,
+        "note_evaluation_actuelle": 4,
+        "note_evaluation_precedente": 3,
+        "annees_depuis_la_derniere_promotion": 1,
     }
 
     r = client.post("/predict", json=payload)
     assert r.status_code == 200, r.text
+
+    body = r.json()
+    assert "proba" in body
+    assert "prediction" in body
+    assert "threshold" in body
+    assert body["threshold"] == 0.292
+    assert body["prediction"] in (0, 1)
