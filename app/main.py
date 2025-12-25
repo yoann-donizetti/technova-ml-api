@@ -11,10 +11,12 @@ app = FastAPI(title="Technova ML API", version="0.4.0")
 
 @app.on_event("startup")
 def startup():
-    app.state.model = load_model()
-    app.state.threshold = load_threshold()
-    print("[startup] model + threshold loaded OK")
+    # ... ton code existant (load env, load model, load threshold, create engine, etc.)
 
+    # ✅ Important : stocker l'engine dans app.state (évite les NameError en tests)
+    app.state.engine = engine  # engine peut être None si DATABASE_URL absent
+
+    print("[startup] model + threshold loaded OK")
 
 @app.get("/", include_in_schema=False)
 def root():
@@ -23,8 +25,18 @@ def root():
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    model_loaded = hasattr(app.state, "model") and app.state.model is not None
+    threshold = getattr(app.state, "threshold", None)
 
+    engine = getattr(app.state, "engine", None)
+    db_configured = engine is not None
+
+    return {
+        "status": "ok",
+        "model_loaded": model_loaded,
+        "threshold": threshold,
+        "db_configured": db_configured,
+    }
 
 @app.post("/predict", response_model=PredictionResponse, tags=["default"])
 def predict_manual(data: PredictionRequest):
