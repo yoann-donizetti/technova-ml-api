@@ -1,11 +1,7 @@
-# app/schemas.py
 from pydantic import BaseModel, Field
 
-class PredictionRequest(BaseModel):
-    # Optionnel : si plus tard tu veux prédire "un employé existant"
-    id_employee: int | None = None
 
-    # Champs "sources" (saisie utilisateur)
+class PredictionRequest(BaseModel):
     age: int = Field(..., ge=0)
     genre: str
     revenu_mensuel: int = Field(..., ge=0)
@@ -29,7 +25,7 @@ class PredictionRequest(BaseModel):
     domaine_etude: str
     frequence_deplacement: str
 
-    # Champs bruts nécessaires pour recalculer les 4 features
+    # champs BRUTS (uniquement pour la route /predict manuel)
     annees_sous_responsable_actuel: int = Field(..., ge=0)
     annees_dans_le_poste_actuel: int = Field(..., ge=0)
     note_evaluation_actuelle: int
