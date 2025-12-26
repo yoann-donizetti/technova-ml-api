@@ -1,3 +1,5 @@
+# app/main.py
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Depends
@@ -12,17 +14,24 @@ from app.db.engine import get_engine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # --- STARTUP ---
+#mode test
+    if os.getenv("APP_ENV") == "test":
+        class DummyModel:
+            def predict_proba(self, X):
+                return [[0.2, 0.8]]
+
+        app.state.model = DummyModel()
+        app.state.threshold = 0.292
+        app.state.engine = None
+        yield
+        return
+
+    # mode normal
     app.state.model = load_model()
     app.state.threshold = float(load_threshold())
     app.state.engine = get_engine()
     print("[startup] model + threshold loaded OK")
-
     yield
-
-    # --- SHUTDOWN ---
-    # Rien à faire pour l'instant
-    print("[shutdown] app stopped")
 
 
 app = FastAPI(title="Technova ML API", version="0.4.0", lifespan=lifespan)
@@ -60,11 +69,7 @@ def predict_manual(data: PredictionRequest):
             threshold=float(app.state.threshold),
             engine=getattr(app.state, "engine", None),
         )
-        return PredictionResponse(
-            proba=float(proba),
-            prediction=int(pred),
-            threshold=float(app.state.threshold),
-        )
+        return PredictionResponse(proba=float(proba), prediction=int(pred), threshold=float(app.state.threshold))
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -83,11 +88,7 @@ def predict_by_id(id_employee: int):
             threshold=float(app.state.threshold),
             engine=getattr(app.state, "engine", None),
         )
-        return PredictionResponse(
-            proba=float(proba),
-            prediction=int(pred),
-            threshold=float(app.state.threshold),
-        )
+        return PredictionResponse(proba=float(proba), prediction=int(pred), threshold=float(app.state.threshold))
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

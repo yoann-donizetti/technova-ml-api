@@ -6,21 +6,26 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 @dataclass(frozen=True)
 class Settings:
-    DATABASE_URL: str | None = os.getenv("DATABASE_URL")
-
-    THRESHOLD_PATH: str = os.getenv("THRESHOLD_PATH", "config/threshold.json")
-
-    MODEL_PATH: str | None = os.getenv("MODEL_PATH")
-
-    HF_MODEL_REPO: str | None = os.getenv("HF_MODEL_REPO")
-    HF_MODEL_FILENAME: str | None = os.getenv("HF_MODEL_FILENAME", "model.joblib")
-    HF_TOKEN: str | None = os.getenv("HF_TOKEN")
-
-    API_KEY: str | None = os.getenv("API_KEY")
+    DATABASE_URL: str | None
+    THRESHOLD_PATH: str
+    MODEL_PATH: str | None
+    HF_MODEL_REPO: str | None
+    HF_MODEL_FILENAME: str
+    HF_TOKEN: str | None
+    API_KEY: str | None
 
 
-@lru_cache(maxsize=1)
+@lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    return Settings(
+        DATABASE_URL=os.getenv("DATABASE_URL"),
+        THRESHOLD_PATH=os.getenv("THRESHOLD_PATH", "config/threshold.json"),
+        MODEL_PATH=os.getenv("MODEL_PATH"),
+        HF_MODEL_REPO=os.getenv("HF_MODEL_REPO"),
+        HF_MODEL_FILENAME=os.getenv("HF_MODEL_FILENAME", "model.joblib"),
+        HF_TOKEN=os.getenv("HF_TOKEN"),
+        API_KEY=os.getenv("API_KEY"),
+    )
