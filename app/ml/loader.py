@@ -1,4 +1,3 @@
-# app/ml/loader.py
 import json
 import os
 import joblib

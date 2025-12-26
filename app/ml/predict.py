@@ -76,7 +76,6 @@ def predict_from_employee_features(employee_row: dict, model, threshold: float):
     df = pd.DataFrame([employee_row])
     df = normalize_text(df)
 
-    # ici, PAS de add_features_from_raw() sinon on exige des champs bruts inutiles
     X = df[FEATURE_COLUMNS]
     proba = float(model.predict_proba(X)[0][1])
     pred = int(proba >= float(threshold))
