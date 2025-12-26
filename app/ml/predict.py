@@ -1,7 +1,7 @@
 import pandas as pd
 from app.ml.preprocessing import normalize_text
 
-# Colonnes attendues par le modèle (celles que ton modèle consomme)
+# Colonnes attendues par le modèle
 FEATURE_COLUMNS = [
     "age",
     "genre",

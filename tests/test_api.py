@@ -1,57 +1,109 @@
 # tests/test_api.py
-from fastapi.testclient import TestClient
+import pytest
 
-from app.main import app
+# Payload valide pour /predict
+PAYLOAD_OK = {
+    "age": 41,
+    "genre": "homme",
+    "revenu_mensuel": 3000,
+    "statut_marital": "célibataire",
+    "departement": "sales",
+    "poste": "sales executive",
+    "nombre_experiences_precedentes": 2,
+    "annees_dans_l_entreprise": 5,
+    "satisfaction_employee_environnement": 3,
+    "satisfaction_employee_nature_travail": 3,
+    "satisfaction_employee_equipe": 3,
+    "satisfaction_employee_equilibre_pro_perso": 3,
+    "heure_supplementaires": True,
+    "augmentation_salaire_precedente": 12,
+    "nombre_participation_pee": 2,
+    "nb_formations_suivies": 1,
+    "distance_domicile_travail": 10,
+    "niveau_education": 3,
+    "domaine_etude": "life sciences",
+    "frequence_deplacement": "travel_rarely",
+    # champs bruts nécessaires au calcul des features
+    "annees_sous_responsable_actuel": 3,
+    "annees_dans_le_poste_actuel": 2,
+    "note_evaluation_actuelle": 4,
+    "note_evaluation_precedente": 3,
+    "annees_depuis_la_derniere_promotion": 1,
+}
 
-client = TestClient(app)
 
-class DummyModel:
-    def predict_proba(self, X):
-        # proba de classe 1 = 0.8
-        return [[0.2, 0.8]]
+# -------------------------------------------------------------------
+# Utilitaire : injecter un état minimal dans l'app (pas de HF / pas de DB)
+# -------------------------------------------------------------------
+def _inject_dummy_state():
+    from app.main import app
 
-def test_predict_ok():
-    client.app.state.model = DummyModel()
-    client.app.state.threshold = 0.292
+    class DummyModel:
+        def predict_proba(self, X):
+            return [[0.2, 0.8]]  # proba classe 1
 
-    payload = {
-        "age": 41,
-        "genre": "homme",
-        "revenu_mensuel": 3000,
-        "statut_marital": "célibataire",
-        "departement": "sales",
-        "poste": "sales executive",
-        "nombre_experiences_precedentes": 2,
-        "annees_dans_l_entreprise": 5,
+    app.state.model = DummyModel()
+    app.state.threshold = 0.292
+    app.state.engine = None
 
-        "satisfaction_employee_environnement": 3,
-        "satisfaction_employee_nature_travail": 3,
-        "satisfaction_employee_equipe": 3,
-        "satisfaction_employee_equilibre_pro_perso": 3,
 
-        "heure_supplementaires": True,
-        "augmentation_salaire_precedente": 12,
-        "nombre_participation_pee": 2,
-        "nb_formations_suivies": 1,
-        "distance_domicile_travail": 10,
-        "niveau_education": 3,
-        "domaine_etude": "life sciences",
-        "frequence_deplacement": "travel_rarely",
+# =========================
+# /predict (POST)
+# =========================
+def test_post_predict_unauthorized_without_api_key(client):
+    r = client.post("/predict", json=PAYLOAD_OK)
+    assert r.status_code == 401
 
-        # champs BRUTS nécessaires au calcul des features
-        "annees_sous_responsable_actuel": 3,
-        "annees_dans_le_poste_actuel": 2,
-        "note_evaluation_actuelle": 4,
-        "note_evaluation_precedente": 3,
-        "annees_depuis_la_derniere_promotion": 1,
-    }
 
-    r = client.post("/predict", json=payload)
+def test_post_predict_unauthorized_with_wrong_api_key(client):
+    r = client.post(
+        "/predict",
+        json=PAYLOAD_OK,
+        headers={"X-API-Key": "WRONG"},
+    )
+    assert r.status_code == 401
+
+
+def test_post_predict_ok_with_api_key(client, auth_headers):
+    _inject_dummy_state()
+
+    r = client.post("/predict", json=PAYLOAD_OK, headers=auth_headers)
     assert r.status_code == 200, r.text
 
     body = r.json()
-    assert "proba" in body
-    assert "prediction" in body
-    assert "threshold" in body
     assert body["threshold"] == 0.292
     assert body["prediction"] in (0, 1)
+    assert "proba" in body
+
+
+# =========================
+# /predict/{id} (GET)
+# =========================
+def test_get_predict_by_id_unauthorized_without_api_key(client):
+    r = client.get("/predict/7")
+    assert r.status_code == 401
+
+
+def test_get_predict_by_id_unauthorized_with_wrong_api_key(client):
+    r = client.get("/predict/7", headers={"X-API-Key": "WRONG"})
+    assert r.status_code == 401
+
+
+def test_get_predict_by_id_ok_with_api_key(client, auth_headers, monkeypatch):
+    _inject_dummy_state()
+
+    # IMPORTANT : patcher là où la fonction est importée (app.main)
+    import app.main as main_module
+
+    def fake_run_predict_by_id(*, id_employee, model, threshold, engine):
+        return 0.55, 1, {"id_employee": id_employee}
+
+    monkeypatch.setattr(main_module, "run_predict_by_id", fake_run_predict_by_id)
+
+    r = client.get("/predict/7", headers=auth_headers)
+    assert r.status_code == 200, r.text
+
+    body = r.json()
+    assert body["threshold"] == 0.292
+    assert body["prediction"] in (0, 1)
+    assert "proba" in body
