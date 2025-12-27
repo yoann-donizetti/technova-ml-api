@@ -4,6 +4,7 @@
 - [Présentation du projet](#présentation-du-projet)
 - [Structure du projet](#structure-du-projet)
 - [Architecture globale](#architecture-globale)
+- [Intégration Continue et Déploiement Continu](#intégration-continue-et-déploiement-continu)
 - [Architecture des données (BDD)](#architecture-des-données-bdd)
 - [Modèle de Machine Learning](#modèle-de-machine-learning)
 - [API FastAPI](#api-fastapi)
@@ -64,6 +65,26 @@ technova-ml-api/
 - Tests automatisés avec **Pytest**
 
 
+
+---
+## Intégration Continue et Déploiement Continu
+
+Le projet intègre une démarche d’intégration continue (CI) afin de garantir
+la qualité et la stabilité du code à chaque modification.
+
+### Intégration Continue (CI)
+- Pipeline automatisé via **GitHub Actions**
+- Exécution des tests Pytest à chaque push et pull request
+- Validation du code avant fusion sur la branche principale
+- Détection précoce des régressions
+
+### Déploiement Continu (CD)
+- Déploiement de l’API sur **Hugging Face Spaces**
+- Gestion des secrets (API Key, accès modèle) via variables d’environnement
+- Séparation des environnements (local / CI / production)
+
+Cette approche permet un déploiement fiable, reproductible et sécurisé
+du modèle de Machine Learning exposé par l’API.
 
 ---
 
@@ -158,7 +179,7 @@ La documentation est disponible via Swagger :
   "satisfaction_employee_nature_travail": 1,
   "satisfaction_employee_equipe": 1,
   "satisfaction_employee_equilibre_pro_perso": 1,
-  "heure_supplementaires": true,
+  "heure_supplementaires": True,
   "augmentation_salaire_precedente": 11,
   "nombre_participation_pee": 0,
   "nb_formations_suivies": 0,

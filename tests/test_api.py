@@ -1,34 +1,33 @@
-# tests/test_api.py
+
 import pytest
 
 # Payload valide pour /predict
 PAYLOAD_OK = {
-    "age": 41,
-    "genre": "homme",
-    "revenu_mensuel": 3000,
-    "statut_marital": "célibataire",
-    "departement": "sales",
-    "poste": "sales executive",
-    "nombre_experiences_precedentes": 2,
-    "annees_dans_l_entreprise": 5,
-    "satisfaction_employee_environnement": 3,
-    "satisfaction_employee_nature_travail": 3,
-    "satisfaction_employee_equipe": 3,
-    "satisfaction_employee_equilibre_pro_perso": 3,
-    "heure_supplementaires": True,
-    "augmentation_salaire_precedente": 12,
-    "nombre_participation_pee": 2,
-    "nb_formations_suivies": 1,
-    "distance_domicile_travail": 10,
-    "niveau_education": 3,
-    "domaine_etude": "life sciences",
-    "frequence_deplacement": "travel_rarely",
-    # champs bruts nécessaires au calcul des features
-    "annees_sous_responsable_actuel": 3,
-    "annees_dans_le_poste_actuel": 2,
-    "note_evaluation_actuelle": 4,
-    "note_evaluation_precedente": 3,
-    "annees_depuis_la_derniere_promotion": 1,
+  "age": 41,
+  "genre": "homme",
+  "revenu_mensuel": 3993,
+  "statut_marital": "célibataire",
+  "departement": "commercial",
+  "poste": "cadre commercial",
+  "nombre_experiences_precedentes": 2,
+  "annees_dans_l_entreprise": 5,
+  "satisfaction_employee_environnement": 4,
+  "satisfaction_employee_nature_travail": 1,
+  "satisfaction_employee_equipe": 1,
+  "satisfaction_employee_equilibre_pro_perso": 1,
+  "heure_supplementaires": True,
+  "augmentation_salaire_precedente": 11,
+  "nombre_participation_pee": 0,
+  "nb_formations_suivies": 0,
+  "distance_domicile_travail": 1,
+  "niveau_education": 2,
+  "domaine_etude": "infra & cloud",
+  "frequence_deplacement": "occasionnel",
+  "annees_sous_responsable_actuel": 0,
+  "annees_dans_le_poste_actuel": 0,
+  "note_evaluation_actuelle": 0,
+  "note_evaluation_precedente": 0,
+  "annees_depuis_la_derniere_promotion": 0
 }
 
 
