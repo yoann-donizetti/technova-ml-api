@@ -71,6 +71,8 @@ technova-ml-api/
 
 Le projet intègre une démarche d’intégration continue (CI) afin de garantir
 la qualité et la stabilité du code à chaque modification.
+Les mises à jour du code ou du modèle sont réalisées via des commits sur la branche principale,
+déclenchant automatiquement les tests et le redéploiement de l’API grâce au pipeline CI/CD.
 
 ### Intégration Continue (CI)
 - Pipeline automatisé via **GitHub Actions**
@@ -149,6 +151,9 @@ flowchart TD
 - Sortie : probabilité + décision selon un seuil configurable
 - Seuil stocké dans un fichier de configuration
 
+
+Les performances du modèle ont été évaluées en amont lors du projet de data science,
+et le modèle est ici réutilisé comme un composant validé pour un usage en production.
 ---
 
 ## API FastAPI
