@@ -1,5 +1,5 @@
 from sqlalchemy import text
-
+# Requetes SQL utilisées par l'API
 SQL_INSERT_REQUEST = text("""
 INSERT INTO audit.prediction_requests (payload)
 VALUES (CAST(:payload AS jsonb))
