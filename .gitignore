@@ -6,3 +6,6 @@ __pycache__/
 models/*.joblib
 .env
 data/
+.coverage
+htmlcov/
+coverage.xml

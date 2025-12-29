@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from functools import lru_cache
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv()#Charge automatiquement les variables définies dans un fichier .env
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True)# Crée une classe de configuration immuable
 class Settings:
     DATABASE_URL: str | None
     THRESHOLD_PATH: str
@@ -17,8 +17,13 @@ class Settings:
     API_KEY: str | None
 
 
-@lru_cache
+@lru_cache # Cache le résultat de la fonction en mémoire
 def get_settings() -> Settings:
+    '''
+    La fonction get_settings retourne explicitement 
+    un objet de type Settings, ce qui rend la configuration claire,
+      typée et plus sûre à l’échelle de l’application.
+    '''
     return Settings(
         DATABASE_URL=os.getenv("DATABASE_URL"),
         THRESHOLD_PATH=os.getenv("THRESHOLD_PATH", "config/threshold.json"),
