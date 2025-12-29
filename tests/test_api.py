@@ -91,7 +91,7 @@ def test_get_predict_by_id_unauthorized_with_wrong_api_key(client):
 def test_get_predict_by_id_ok_with_api_key(client, auth_headers, monkeypatch):
     _inject_dummy_state()
 
-    # IMPORTANT : patcher là où la fonction est importée (app.main)
+
     import app.main as main_module
 
     def fake_run_predict_by_id(*, id_employee, model, threshold, engine):
