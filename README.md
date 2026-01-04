@@ -164,6 +164,8 @@ flowchart TD
 
 Les performances du modèle ont été évaluées en amont lors du projet de data science,
 et le modèle est ici réutilisé comme un composant validé pour un usage en production.
+
+Le modèle peut être remplacé ou mis à jour sans modification de l’API, en respectant le même schéma d’entrée.
 ---
 
 ## API FastAPI
@@ -249,7 +251,47 @@ Cette approche garantit la reproductibilité et l’auditabilité des prédictio
 - Tests des endpoints critiques
 - Exécution automatisée en CI
 
+### Couverture de tests
+
+Le projet intègre une mesure de la couverture de tests afin d’évaluer
+la robustesse du code et la fiabilité de l’API.
+
+Les tests sont exécutés avec **pytest** et **pytest-cov**.
+
+```bash
+python -m pytest --cov=app --cov-report=term
+```
+```text
 ---
+Name                        Stmts   Miss  Cover
+-----------------------------------------------
+app\__init__.py                 0      0   100%
+app\core\__init__.py            0      0   100%
+app\core\config.py             17      0   100%
+app\db\__init__.py              0      0   100%
+app\db\engine.py                7      1    86%
+app\db\queries.py               4      0   100%
+app\main.py                    51     13    75%
+app\ml\__init__.py              0      0   100%
+app\ml\loader.py               26     18    31%
+app\ml\predict.py              28      7    75%
+app\ml\preprocessing.py         8      0   100%
+app\schemas\__init__.py         0      0   100%
+app\schemas\prediction.py      31      0   100%
+app\security\__init__.py        0      0   100%
+app\security\auth.py            9      1    89%
+app\services\__init__.py        0      0   100%
+app\services\audit.py           7      0   100%
+app\services\features.py        7      1    86%
+app\services\predict.py        19      0   100%
+-----------------------------------------------
+TOTAL                         214     41    81%
+```
+
+Les fichiers les moins couverts sont surtout ceux liés au démarrage et aux dépendances externes (chargement du modèle, Hugging Face, connexion DB). En mode test, j’isole ces dépendances avec un DummyModel pour avoir des tests rapides et reproductibles. Les tests couvrent en priorité l’API, la sécurité et les scénarios critiques. Les chemins restants seraient plutôt couverts via tests d’intégration.
+
+---
+
 
 ## Déploiement
 
@@ -270,7 +312,7 @@ Les variables suivantes sont nécessaires au fonctionnement de l’API :
 - `DATABASE_URL` : chaîne de connexion PostgreSQL
 - `MODEL_PATH` : chemin vers le modèle local (optionnel)
 - `HF_MODEL_REPO` / `HF_MODEL_FILENAME` : modèle hébergé sur Hugging Face
-- `HF_TOKEN` : token Hugging Face (si requis)
+- `HF_TOKEN` : token Hugging Face
 
 Ces variables sont fournies via l’environnement d’exécution
 (local, CI/CD ou Hugging Face Spaces) et ne sont jamais stockées
