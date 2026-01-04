@@ -176,6 +176,8 @@ Le modèle peut être remplacé ou mis à jour sans modification de l’API, en 
 - `POST /predict` : prédiction à partir de données fournies
 - `GET /predict/{id_employee}` : prédiction à partir de la base de données
 
+L’endpoint `/health` permet de vérifier l’état de l’API(chargement du modèle, seuil, configuration de la base) et peut être utilisé pour le monitoring.
+
 La documentation est disponible via Swagger :
 `/docs`
 
@@ -251,6 +253,8 @@ Cette approche garantit la reproductibilité et l’auditabilité des prédictio
 - Tests des endpoints critiques
 - Exécution automatisée en CI
 
+Les dépendances externes (chargement du modèle distant, connexion PostgreSQL réelle) ne sont pas testées en CI afin de garantir des tests rapides et reproductibles. Ces scénarios relèvent de tests d’intégration ou d’environnements
+
 ### Couverture de tests
 
 Le projet intègre une mesure de la couverture de tests afin d’évaluer
@@ -317,6 +321,19 @@ Les variables suivantes sont nécessaires au fonctionnement de l’API :
 Ces variables sont fournies via l’environnement d’exécution
 (local, CI/CD ou Hugging Face Spaces) et ne sont jamais stockées
 en clair dans le dépôt.
+
+### Configuration des variables d’environnement
+
+Le projet utilise des variables d’environnement pour gérer la configuration
+et les secrets.
+
+Un fichier `.env.example` est fourni à la racine du dépôt.
+Il peut être copié et renommé en `.env`, puis complété avec les valeurs
+appropriées selon l’environnement d’exécution (local, CI/CD, production).
+
+```bash
+cp .env.example .env
+```
 ---
 
 ## Installation et utilisation
@@ -329,3 +346,5 @@ uvicorn app.main:app --reload
 ```
 
 ---
+Ce projet met en œuvre une API de Machine Learning prête pour un usage en production,
+avec une attention particulière portée à la sécurité, à la testabilité et à la reproductibilité.
